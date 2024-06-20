@@ -22,7 +22,11 @@ import (
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
-	svcsdk "github.com/aws/aws-sdk-go/service/efs"
+
+	//svcsdk "github.com/aws/aws-sdk-go/service/efs"
+
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/efs"
+	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/efs/types"
 
 	svcapitypes "github.com/aws-controllers-k8s/efs-controller/apis/v1alpha1"
 	"github.com/aws-controllers-k8s/efs-controller/pkg/tags"
@@ -39,9 +43,9 @@ var (
 	// TerminalStatuses are the status strings that are terminal states for a
 	// filesystem.
 	TerminalStatuses = []string{
-		string(svcapitypes.LifeCycleState_error),
-		string(svcapitypes.LifeCycleState_deleted),
-		string(svcapitypes.LifeCycleState_deleting),
+		string(svcapitypes.LifeCycleState_ERROR),
+		string(svcapitypes.LifeCycleState_DELETED),
+		string(svcapitypes.LifeCycleState_DELETING),
 	}
 )
 
@@ -54,7 +58,7 @@ func requeueWaitState(r *resource) *ackrequeue.RequeueNeededAfter {
 	status := *r.ko.Status.LifeCycleState
 	return ackrequeue.NeededAfter(
 		fmt.Errorf("filesystem in '%s' state, requeuing until filesystem is '%s'",
-			status, svcapitypes.LifeCycleState_available),
+			status, svcapitypes.LifeCycleState_AVAILABLE),
 		time.Second*10,
 	)
 }
@@ -80,7 +84,7 @@ func filesystemActive(r *resource) bool {
 		return false
 	}
 	cs := *r.ko.Status.LifeCycleState
-	return cs == string(svcapitypes.LifeCycleState_available)
+	return cs == string(svcapitypes.LifeCycleState_AVAILABLE)
 }
 
 // filesystemCreating returns true if the supplied filesystem is in the process of
@@ -90,7 +94,7 @@ func filesystemCreating(r *resource) bool {
 		return false
 	}
 	cs := *r.ko.Status.LifeCycleState
-	return cs == string(svcapitypes.LifeCycleState_creating)
+	return cs == string(svcapitypes.LifeCycleState_AVAILABLE)
 }
 
 // filesystemDeleting returns true if the supplied filesystem is in the process of
@@ -100,7 +104,7 @@ func filesystemDeleting(r *resource) bool {
 		return false
 	}
 	cs := *r.ko.Status.LifeCycleState
-	return cs == string(svcapitypes.LifeCycleState_deleting)
+	return cs == string(svcapitypes.LifeCycleState_DELETING)
 }
 
 // Ideally, a part of this code needs to be generated.. However since the
@@ -143,12 +147,16 @@ func (rm *resourceManager) getBackupPolicy(ctx context.Context, r *svcapitypes.F
 	defer func() { exit(err) }()
 
 	var output *svcsdk.DescribeBackupPolicyOutput
-	output, err = rm.sdkapi.DescribeBackupPolicyWithContext(
-		ctx,
-		&svcsdk.DescribeBackupPolicyInput{
-			FileSystemId: r.Status.FileSystemID,
-		},
-	)
+	// output, err = rm.sdkapi.DescribeBackupPolicyWithContext(
+	// 	ctx,
+	// 	&svcsdk.DescribeBackupPolicyInput{
+	// 		FileSystemId: r.Status.FileSystemID,
+	// 	},
+	// )
+
+	output, err = rm.clientV2.DescribeBackupPolicy(ctx, &svcsdk.DescribeBackupPolicyInput{
+		FileSystemId: r.Status.FileSystemID,
+	})
 	rm.metrics.RecordAPICall("GET", "DescribeBackupPolicy", err)
 	if err != nil {
 		if strings.Contains(err.Error(), "PolicyNotFound") {
@@ -156,8 +164,9 @@ func (rm *resourceManager) getBackupPolicy(ctx context.Context, r *svcapitypes.F
 		}
 		return nil, err
 	}
+
 	backupPolicy := &svcapitypes.BackupPolicy{
-		Status: output.BackupPolicy.Status,
+		Status: (*string)(&output.BackupPolicy.Status),
 	}
 
 	return backupPolicy, nil
@@ -170,12 +179,16 @@ func (rm *resourceManager) getPolicy(ctx context.Context, r *svcapitypes.FileSys
 	defer func() { exit(err) }()
 
 	var output *svcsdk.DescribeFileSystemPolicyOutput
-	output, err = rm.sdkapi.DescribeFileSystemPolicyWithContext(
-		ctx,
-		&svcsdk.DescribeFileSystemPolicyInput{
-			FileSystemId: r.Status.FileSystemID,
-		},
-	)
+	// output, err = rm.sdkapi.DescribeFileSystemPolicyWithContext(
+	// 	ctx,
+	// 	&svcsdk.DescribeFileSystemPolicyInput{
+	// 		FileSystemId: r.Status.FileSystemID,
+	// 	},
+	// )
+
+	output, err = rm.clientV2.DescribeFileSystemPolicy(ctx, &svcsdk.DescribeFileSystemPolicyInput{
+		FileSystemId: r.Status.FileSystemID,
+	})
 	rm.metrics.RecordAPICall("GET", "DescribeFileSystemPolicy", err)
 	if err != nil {
 		if strings.Contains(err.Error(), "PolicyNotFound") {
@@ -193,12 +206,15 @@ func (rm *resourceManager) getLifecyclePolicies(ctx context.Context, r *svcapity
 	defer func() { exit(err) }()
 
 	var output *svcsdk.DescribeLifecycleConfigurationOutput
-	output, err = rm.sdkapi.DescribeLifecycleConfigurationWithContext(
-		ctx,
-		&svcsdk.DescribeLifecycleConfigurationInput{
-			FileSystemId: r.Status.FileSystemID,
-		},
-	)
+	// output, err = rm.sdkapi.DescribeLifecycleConfigurationWithContext(
+	// 	ctx,
+	// 	&svcsdk.DescribeLifecycleConfigurationInput{
+	// 		FileSystemId: r.Status.FileSystemID,
+	// 	},
+	// )
+	output, err = rm.clientV2.DescribeLifecycleConfiguration(ctx, &svcsdk.DescribeLifecycleConfigurationInput{
+		FileSystemId: r.Status.FileSystemID,
+	})
 	rm.metrics.RecordAPICall("GET", "DescribeLifecycleConfiguration", err)
 	if err != nil {
 		return nil, err
@@ -206,9 +222,9 @@ func (rm *resourceManager) getLifecyclePolicies(ctx context.Context, r *svcapity
 
 	for _, lp := range output.LifecyclePolicies {
 		lps = append(lps, &svcapitypes.LifecyclePolicy{
-			TransitionToArchive:             lp.TransitionToArchive,
-			TransitionToIA:                  lp.TransitionToIA,
-			TransitionToPrimaryStorageClass: lp.TransitionToPrimaryStorageClass,
+			TransitionToArchive:             (*string)(&lp.TransitionToArchive),
+			TransitionToIA:                  (*string)(&lp.TransitionToIA),
+			TransitionToPrimaryStorageClass: (*string)(&lp.TransitionToPrimaryStorageClass),
 		})
 	}
 
@@ -220,14 +236,20 @@ func (rm *resourceManager) syncPolicy(ctx context.Context, r *resource) (err err
 	exit := rlog.Trace("rm.syncPolicy")
 	defer func() { exit(err) }()
 
-	_, err = rm.sdkapi.PutFileSystemPolicyWithContext(
-		ctx,
-		&svcsdk.PutFileSystemPolicyInput{
-			FileSystemId: r.ko.Status.FileSystemID,
-			Policy:       r.ko.Spec.Policy,
-			// BypassPolicyLockoutSafetyCheck: r.ko.Spec.BypassPolicyLockoutSafetyCheck,
-		},
-	)
+	// _, err = rm.sdkapi.PutFileSystemPolicyWithContext(
+	// 	ctx,
+	// 	&svcsdk.PutFileSystemPolicyInput{
+	// 		FileSystemId: r.ko.Status.FileSystemID,
+	// 		Policy:       r.ko.Spec.Policy,
+	// 		// BypassPolicyLockoutSafetyCheck: r.ko.Spec.BypassPolicyLockoutSafetyCheck,
+	// 	},
+	// )
+
+	_, err = rm.clientV2.PutFileSystemPolicy(ctx, &svcsdk.PutFileSystemPolicyInput{
+		FileSystemId: r.ko.Status.FileSystemID,
+		Policy:       r.ko.Spec.Policy,
+		//BypassPolicyLockoutSafetyCheck: r.ko.Spec.BypassPolicyLockoutSafetyCheck,
+	})
 	rm.metrics.RecordAPICall("UPDATE", "PutFileSystemPolicy", err)
 	return err
 }
@@ -237,15 +259,22 @@ func (rm *resourceManager) syncBackupPolicy(ctx context.Context, r *resource) (e
 	exit := rlog.Trace("rm.syncBackupPolicy")
 	defer func() { exit(err) }()
 
-	_, err = rm.sdkapi.PutBackupPolicyWithContext(
-		ctx,
-		&svcsdk.PutBackupPolicyInput{
-			FileSystemId: r.ko.Status.FileSystemID,
-			BackupPolicy: &svcsdk.BackupPolicy{
-				Status: r.ko.Spec.BackupPolicy.Status,
-			},
+	// _, err = rm.sdkapi.PutBackupPolicyWithContext(
+	// 	ctx,
+	// 	&svcsdk.PutBackupPolicyInput{
+	// 		FileSystemId: r.ko.Status.FileSystemID,
+	// 		BackupPolicy: &svcsdk.BackupPolicy{
+	// 			Status: r.ko.Spec.BackupPolicy.Status,
+	// 		},
+	// 	},
+	// )
+
+	_, err = rm.clientV2.PutBackupPolicy(ctx, &svcsdk.PutBackupPolicyInput{
+		FileSystemId: r.ko.Status.FileSystemID,
+		BackupPolicy: &svcsdktypes.BackupPolicy{
+			Status: svcsdktypes.Status(*r.ko.Spec.BackupPolicy.Status),
 		},
-	)
+	})
 	rm.metrics.RecordAPICall("UPDATE", "PutBackupPolicy", err)
 	return err
 }
@@ -255,22 +284,36 @@ func (rm *resourceManager) syncLifecyclePolicies(ctx context.Context, r *resourc
 	exit := rlog.Trace("rm.syncLifecyclePolicies")
 	defer func() { exit(err) }()
 
-	lps := []*svcsdk.LifecyclePolicy{}
+	// lps := []*svcsdk.LifecyclePolicy{}
+	// for _, lp := range r.ko.Spec.LifecyclePolicies {
+	// 	lps = append(lps, &svcsdk.LifecyclePolicy{
+	// 		TransitionToArchive:             lp.TransitionToArchive,
+	// 		TransitionToIA:                  lp.TransitionToIA,
+	// 		TransitionToPrimaryStorageClass: lp.TransitionToPrimaryStorageClass,
+	// 	})
+	// }
+
+	lps := []svcsdktypes.LifecyclePolicy{}
 	for _, lp := range r.ko.Spec.LifecyclePolicies {
-		lps = append(lps, &svcsdk.LifecyclePolicy{
-			TransitionToArchive:             lp.TransitionToArchive,
-			TransitionToIA:                  lp.TransitionToIA,
-			TransitionToPrimaryStorageClass: lp.TransitionToPrimaryStorageClass,
+		lps = append(lps, svcsdktypes.LifecyclePolicy{
+			TransitionToArchive:             svcsdktypes.TransitionToArchiveRules(*lp.TransitionToArchive),
+			TransitionToIA:                  svcsdktypes.TransitionToIARules(*lp.TransitionToIA),
+			TransitionToPrimaryStorageClass: svcsdktypes.TransitionToPrimaryStorageClassRules(*lp.TransitionToPrimaryStorageClass),
 		})
 	}
 
-	_, err = rm.sdkapi.PutLifecycleConfigurationWithContext(
-		ctx,
-		&svcsdk.PutLifecycleConfigurationInput{
-			FileSystemId:      r.ko.Status.FileSystemID,
-			LifecyclePolicies: lps,
-		},
-	)
+	// _, err = rm.sdkapi.PutLifecycleConfigurationWithContext(
+	// 	ctx,
+	// 	&svcsdk.PutLifecycleConfigurationInput{
+	// 		FileSystemId:      r.ko.Status.FileSystemID,
+	// 		LifecyclePolicies: lps,
+	// 	},
+	// )
+
+	_, err = rm.clientV2.PutLifecycleConfiguration(ctx, &svcsdk.PutLifecycleConfigurationInput{
+		FileSystemId:      r.ko.Status.FileSystemID,
+		LifecyclePolicies: lps,
+	})
 	rm.metrics.RecordAPICall("UPDATE", "PutLifecycleConfiguration", err)
 	return err
 }
@@ -280,13 +323,18 @@ func (rm *resourceManager) syncFilesystemProtection(ctx context.Context, r *reso
 	exit := rlog.Trace("rm.syncFilesystemProtection")
 	defer func() { exit(err) }()
 
-	_, err = rm.sdkapi.UpdateFileSystemProtectionWithContext(
-		ctx,
-		&svcsdk.UpdateFileSystemProtectionInput{
-			FileSystemId:                   r.ko.Status.FileSystemID,
-			ReplicationOverwriteProtection: r.ko.Spec.FileSystemProtection.ReplicationOverwriteProtection,
-		},
-	)
+	// _, err = rm.sdkapi.UpdateFileSystemProtectionWithContext(
+	// 	ctx,
+	// 	&svcsdk.UpdateFileSystemProtectionInput{
+	// 		FileSystemId:                   r.ko.Status.FileSystemID,
+	// 		ReplicationOverwriteProtection: r.ko.Spec.FileSystemProtection.ReplicationOverwriteProtection,
+	// 	},
+	// )
+
+	_, err = rm.clientV2.UpdateFileSystemProtection(ctx, &svcsdk.UpdateFileSystemProtectionInput{
+		FileSystemId:                   r.ko.Status.FileSystemID,
+		ReplicationOverwriteProtection: svcsdktypes.ReplicationOverwriteProtection(*r.ko.Spec.FileSystemProtection.ReplicationOverwriteProtection),
+	})
 	rm.metrics.RecordAPICall("UPDATE", "UpdateFileSystemProtection", err)
 	return err
 }

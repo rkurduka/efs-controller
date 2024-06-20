@@ -26,6 +26,8 @@ import (
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
 	"github.com/aws/aws-sdk-go/aws"
 
+	//"github.com/aws/aws-sdk-go/aws"
+
 	svcapitypes "github.com/aws-controllers-k8s/efs-controller/apis/v1alpha1"
 	"github.com/aws-controllers-k8s/efs-controller/pkg/tags"
 )
@@ -51,7 +53,7 @@ func requeueWaitState(r *resource) *ackrequeue.RequeueNeededAfter {
 	status := *r.ko.Status.LifeCycleState
 	return ackrequeue.NeededAfter(
 		fmt.Errorf("accesspoint in '%s' state, requeuing until accesspoint is '%s'",
-			status, svcapitypes.LifeCycleState_available),
+			status, svcapitypes.LifeCycleState_AVAILABLE),
 		time.Second*10,
 	)
 }
@@ -62,7 +64,7 @@ func accessPointActive(r *resource) bool {
 		return false
 	}
 	cs := *r.ko.Status.LifeCycleState
-	return cs == string(svcapitypes.LifeCycleState_available)
+	return cs == string(svcapitypes.LifeCycleState_AVAILABLE)
 }
 
 // customUpdateAccessPoint updates the access point

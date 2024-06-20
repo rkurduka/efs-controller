@@ -23,10 +23,12 @@ import (
 	ackcfg "github.com/aws-controllers-k8s/runtime/pkg/config"
 	ackmetrics "github.com/aws-controllers-k8s/runtime/pkg/metrics"
 	acktypes "github.com/aws-controllers-k8s/runtime/pkg/types"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/go-logr/logr"
 
 	svcresource "github.com/aws-controllers-k8s/efs-controller/pkg/resource"
+	svcsdkV2efs "github.com/aws/aws-sdk-go-v2/service/efs"
 )
 
 // resourceManagerFactory produces resourceManager objects. It implements the
@@ -53,6 +55,7 @@ func (f *resourceManagerFactory) ManagerFor(
 	sess *session.Session,
 	id ackv1alpha1.AWSAccountID,
 	region ackv1alpha1.AWSRegion,
+	config aws.Config,
 ) (acktypes.AWSResourceManager, error) {
 	rmId := fmt.Sprintf("%s/%s", id, region)
 	f.RLock()
@@ -66,7 +69,10 @@ func (f *resourceManagerFactory) ManagerFor(
 	f.Lock()
 	defer f.Unlock()
 
-	rm, err := newResourceManager(cfg, log, metrics, rr, sess, id, region)
+	// Create a client for efs
+	clientV2 := svcsdkV2efs.NewFromConfig(config)
+
+	rm, err := newResourceManager(cfg, log, metrics, rr, sess, id, region, config, clientV2)
 	if err != nil {
 		return nil, err
 	}

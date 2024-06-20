@@ -118,13 +118,6 @@ func newResourceDelta(
 			delta.Add("Spec.Policy", a.ko.Spec.Policy, b.ko.Spec.Policy)
 		}
 	}
-	if ackcompare.HasNilDifference(a.ko.Spec.ProvisionedThroughputInMiBps, b.ko.Spec.ProvisionedThroughputInMiBps) {
-		delta.Add("Spec.ProvisionedThroughputInMiBps", a.ko.Spec.ProvisionedThroughputInMiBps, b.ko.Spec.ProvisionedThroughputInMiBps)
-	} else if a.ko.Spec.ProvisionedThroughputInMiBps != nil && b.ko.Spec.ProvisionedThroughputInMiBps != nil {
-		if *a.ko.Spec.ProvisionedThroughputInMiBps != *b.ko.Spec.ProvisionedThroughputInMiBps {
-			delta.Add("Spec.ProvisionedThroughputInMiBps", a.ko.Spec.ProvisionedThroughputInMiBps, b.ko.Spec.ProvisionedThroughputInMiBps)
-		}
-	}
 	if !ackcompare.MapStringStringEqual(ToACKTags(a.ko.Spec.Tags), ToACKTags(b.ko.Spec.Tags)) {
 		delta.Add("Spec.Tags", a.ko.Spec.Tags, b.ko.Spec.Tags)
 	}

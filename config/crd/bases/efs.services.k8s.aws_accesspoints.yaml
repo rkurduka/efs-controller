@@ -65,8 +65,6 @@ spec:
             description: AccessPointSpec defines the desired state of AccessPoint.
             properties:
               fileSystemID:
-                description: The ID of the EFS file system that the access point provides
-                  access to.
                 type: string
               fileSystemRef:
                 description: "AWSResourceReferenceWrapper provides a wrapper around
@@ -84,61 +82,28 @@ spec:
                     type: object
                 type: object
               posixUser:
-                description: |-
-                  The operating system user and group applied to all file system requests made
-                  using the access point.
                 properties:
                   gid:
-                    format: int64
+                    format: int32
                     type: integer
                   secondaryGIDs:
                     items:
-                      format: int64
+                      format: int32
                       type: integer
                     type: array
                   uid:
-                    format: int64
+                    format: int32
                     type: integer
                 type: object
               rootDirectory:
-                description: |-
-                  Specifies the directory on the EFS file system that the access point exposes
-                  as the root directory of your file system to NFS clients using the access
-                  point. The clients using the access point can only access the root directory
-                  and below. If the RootDirectory > Path specified does not exist, Amazon EFS
-                  creates it and applies the CreationInfo settings when a client connects to
-                  an access point. When specifying a RootDirectory, you must provide the Path,
-                  and the CreationInfo.
-
-
-                  Amazon EFS creates a root directory only if you have provided the CreationInfo:
-                  OwnUid, OwnGID, and permissions for the directory. If you do not provide
-                  this information, Amazon EFS does not create the root directory. If the root
-                  directory does not exist, attempts to mount using the access point will fail.
                 properties:
                   creationInfo:
-                    description: |-
-                      Required if the RootDirectory > Path specified does not exist. Specifies
-                      the POSIX IDs and permissions to apply to the access point's RootDirectory
-                      > Path. If the access point root directory does not exist, EFS creates it
-                      with these settings when a client connects to the access point. When specifying
-                      CreationInfo, you must include values for all properties.
-
-
-                      Amazon EFS creates a root directory only if you have provided the CreationInfo:
-                      OwnUid, OwnGID, and permissions for the directory. If you do not provide
-                      this information, Amazon EFS does not create the root directory. If the root
-                      directory does not exist, attempts to mount using the access point will fail.
-
-
-                      If you do not provide CreationInfo and the specified RootDirectory does not
-                      exist, attempts to mount the file system using the access point will fail.
                     properties:
                       ownerGID:
-                        format: int64
+                        format: int32
                         type: integer
                       ownerUID:
-                        format: int64
+                        format: int32
                         type: integer
                       permissions:
                         type: string
@@ -147,16 +112,7 @@ spec:
                     type: string
                 type: object
               tags:
-                description: |-
-                  Creates tags associated with the access point. Each tag is a key-value pair,
-                  each key must be unique. For more information, see Tagging Amazon Web Services
-                  resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
-                  in the Amazon Web Services General Reference Guide.
                 items:
-                  description: |-
-                    A tag is a key-value pair. Allowed characters are letters, white space, and
-                    numbers that can be represented in UTF-8, and the following characters:+
-                    - = . _ : /.
                   properties:
                     key:
                       type: string
@@ -169,7 +125,6 @@ spec:
             description: AccessPointStatus defines the observed state of AccessPoint
             properties:
               accessPointID:
-                description: The ID of the access point, assigned by Amazon EFS.
                 type: string
               ackResourceMetadata:
                 description: |-
@@ -237,15 +192,10 @@ spec:
                   type: object
                 type: array
               lifeCycleState:
-                description: Identifies the lifecycle phase of the access point.
                 type: string
               name:
-                description: The name of the access point. This is the value of the
-                  Name tag.
                 type: string
               ownerID:
-                description: Identifies the Amazon Web Services account that owns
-                  the access point resource.
                 type: string
             type: object
         type: object

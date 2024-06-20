@@ -21,7 +21,10 @@ import (
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
-	svcsdk "github.com/aws/aws-sdk-go/service/efs"
+
+	//svcsdk "github.com/aws/aws-sdk-go/service/efs"
+
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/efs"
 
 	svcapitypes "github.com/aws-controllers-k8s/efs-controller/apis/v1alpha1"
 )
@@ -30,9 +33,9 @@ var (
 	// TerminalStatuses are the status strings that are terminal states for a
 	// mounttarget.
 	TerminalStatuses = []string{
-		string(svcapitypes.LifeCycleState_error),
-		string(svcapitypes.LifeCycleState_deleted),
-		string(svcapitypes.LifeCycleState_deleting),
+		string(svcapitypes.LifeCycleState_ERROR),
+		string(svcapitypes.LifeCycleState_DELETED),
+		string(svcapitypes.LifeCycleState_DELETING),
 	}
 )
 
@@ -45,7 +48,7 @@ func requeueWaitState(r *resource) *ackrequeue.RequeueNeededAfter {
 	status := *r.ko.Status.LifeCycleState
 	return ackrequeue.NeededAfter(
 		fmt.Errorf("mounttarget in '%s' state, requeuing until mounttarget is '%s'",
-			status, svcapitypes.LifeCycleState_available),
+			status, svcapitypes.LifeCycleState_AVAILABLE),
 		time.Second*10,
 	)
 }
@@ -56,7 +59,7 @@ func mountTargetActive(r *resource) bool {
 		return false
 	}
 	cs := *r.ko.Status.LifeCycleState
-	return cs == string(svcapitypes.LifeCycleState_available)
+	return cs == string(svcapitypes.LifeCycleState_AVAILABLE)
 }
 
 // mounttargetCreating returns true if the supplied mounttarget is in the process of
@@ -66,7 +69,7 @@ func mountTargetCreating(r *resource) bool {
 		return false
 	}
 	cs := *r.ko.Status.LifeCycleState
-	return cs == string(svcapitypes.LifeCycleState_creating)
+	return cs == string(svcapitypes.LifeCycleState_CREATING)
 }
 
 // setResourceDefaults queries the EFS API for the current state of the
@@ -91,18 +94,27 @@ func (rm *resourceManager) getSecurityGroups(ctx context.Context, r *svcapitypes
 	defer func() { exit(err) }()
 
 	var output *svcsdk.DescribeMountTargetSecurityGroupsOutput
-	output, err = rm.sdkapi.DescribeMountTargetSecurityGroupsWithContext(
-		ctx,
-		&svcsdk.DescribeMountTargetSecurityGroupsInput{
-			MountTargetId: r.Status.MountTargetID,
-		},
-	)
+	// output, err = rm.sdkapi.DescribeMountTargetSecurityGroupsWithContext(
+	// 	ctx,
+	// 	&svcsdk.DescribeMountTargetSecurityGroupsInput{
+	// 		MountTargetId: r.Status.MountTargetID,
+	// 	},
+	// )
+	output, err = rm.clientV2.DescribeMountTargetSecurityGroups(ctx, &svcsdk.DescribeMountTargetSecurityGroupsInput{
+		MountTargetId: r.Status.MountTargetID,
+	})
 	rm.metrics.RecordAPICall("GET", "DescribeMountTargetSecurityGroups", err)
 	if err != nil {
 		return nil, err
 	}
 
-	return output.SecurityGroups, nil
+	// This is require in AWS-SDK-V2 and as generated type is []*string and output.SecurityGroups is []string
+	var securityGroups []*string
+	for _, sg := range output.SecurityGroups {
+		securityGroups = append(securityGroups, &sg)
+	}
+
+	return securityGroups, nil
 }
 
 // putSecurityGroups updates the security groups for the mount target
@@ -111,13 +123,24 @@ func (rm *resourceManager) putSecurityGroups(ctx context.Context, r *resource) (
 	exit := rlog.Trace("rm.syncPolicy")
 	defer func() { exit(err) }()
 
-	_, err = rm.sdkapi.ModifyMountTargetSecurityGroupsWithContext(
-		ctx,
-		&svcsdk.ModifyMountTargetSecurityGroupsInput{
-			MountTargetId:  r.ko.Status.MountTargetID,
-			SecurityGroups: r.ko.Spec.SecurityGroups,
-		},
-	)
+	// _, err = rm.sdkapi.ModifyMountTargetSecurityGroupsWithContext(
+	// 	ctx,
+	// 	&svcsdk.ModifyMountTargetSecurityGroupsInput{
+	// 		MountTargetId:  r.ko.Status.MountTargetID,
+	// 		SecurityGroups: r.ko.Spec.SecurityGroups,
+	// 	},
+	// )
+
+	// This is require in AWS-SDK-V2 and as generated type is []*string and output.SecurityGroups is []*string
+	var securityGroups []string
+	for _, sg := range r.ko.Spec.SecurityGroups {
+		securityGroups = append(securityGroups, *sg)
+	}
+
+	_, err = rm.clientV2.ModifyMountTargetSecurityGroups(ctx, &svcsdk.ModifyMountTargetSecurityGroupsInput{
+		MountTargetId:  r.ko.Status.MountTargetID,
+		SecurityGroups: securityGroups,
+	})
 	rm.metrics.RecordAPICall("UPDATE", "ModifyMountTargetSecurityGroups", err)
 	return err
 }

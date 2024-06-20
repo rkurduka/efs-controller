@@ -22,31 +22,11 @@ import (
 
 // AccessPointSpec defines the desired state of AccessPoint.
 type AccessPointSpec struct {
-
-	// The ID of the EFS file system that the access point provides access to.
 	FileSystemID  *string                                  `json:"fileSystemID,omitempty"`
 	FileSystemRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"fileSystemRef,omitempty"`
-	// The operating system user and group applied to all file system requests made
-	// using the access point.
-	PosixUser *PosixUser `json:"posixUser,omitempty"`
-	// Specifies the directory on the EFS file system that the access point exposes
-	// as the root directory of your file system to NFS clients using the access
-	// point. The clients using the access point can only access the root directory
-	// and below. If the RootDirectory > Path specified does not exist, Amazon EFS
-	// creates it and applies the CreationInfo settings when a client connects to
-	// an access point. When specifying a RootDirectory, you must provide the Path,
-	// and the CreationInfo.
-	//
-	// Amazon EFS creates a root directory only if you have provided the CreationInfo:
-	// OwnUid, OwnGID, and permissions for the directory. If you do not provide
-	// this information, Amazon EFS does not create the root directory. If the root
-	// directory does not exist, attempts to mount using the access point will fail.
-	RootDirectory *RootDirectory `json:"rootDirectory,omitempty"`
-	// Creates tags associated with the access point. Each tag is a key-value pair,
-	// each key must be unique. For more information, see Tagging Amazon Web Services
-	// resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
-	// in the Amazon Web Services General Reference Guide.
-	Tags []*Tag `json:"tags,omitempty"`
+	PosixUser     *PosixUser                               `json:"posixUser,omitempty"`
+	RootDirectory *RootDirectory                           `json:"rootDirectory,omitempty"`
+	Tags          []*Tag                                   `json:"tags,omitempty"`
 }
 
 // AccessPointStatus defines the observed state of AccessPoint
@@ -62,16 +42,12 @@ type AccessPointStatus struct {
 	// resource
 	// +kubebuilder:validation:Optional
 	Conditions []*ackv1alpha1.Condition `json:"conditions"`
-	// The ID of the access point, assigned by Amazon EFS.
 	// +kubebuilder:validation:Optional
 	AccessPointID *string `json:"accessPointID,omitempty"`
-	// Identifies the lifecycle phase of the access point.
 	// +kubebuilder:validation:Optional
 	LifeCycleState *string `json:"lifeCycleState,omitempty"`
-	// The name of the access point. This is the value of the Name tag.
 	// +kubebuilder:validation:Optional
 	Name *string `json:"name,omitempty"`
-	// Identifies the Amazon Web Services account that owns the access point resource.
 	// +kubebuilder:validation:Optional
 	OwnerID *string `json:"ownerID,omitempty"`
 }

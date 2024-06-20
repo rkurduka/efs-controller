@@ -104,9 +104,6 @@ func validateReferenceFields(ko *svcapitypes.MountTarget) error {
 	if ko.Spec.FileSystemRef != nil && ko.Spec.FileSystemID != nil {
 		return ackerr.ResourceReferenceAndIDNotSupportedFor("FileSystemID", "FileSystemRef")
 	}
-	if ko.Spec.FileSystemRef == nil && ko.Spec.FileSystemID == nil {
-		return ackerr.ResourceReferenceOrIDRequiredFor("FileSystemID", "FileSystemRef")
-	}
 
 	if len(ko.Spec.SecurityGroupRefs) > 0 && len(ko.Spec.SecurityGroups) > 0 {
 		return ackerr.ResourceReferenceAndIDNotSupportedFor("SecurityGroups", "SecurityGroupRefs")
@@ -114,9 +111,6 @@ func validateReferenceFields(ko *svcapitypes.MountTarget) error {
 
 	if ko.Spec.SubnetRef != nil && ko.Spec.SubnetID != nil {
 		return ackerr.ResourceReferenceAndIDNotSupportedFor("SubnetID", "SubnetRef")
-	}
-	if ko.Spec.SubnetRef == nil && ko.Spec.SubnetID == nil {
-		return ackerr.ResourceReferenceOrIDRequiredFor("SubnetID", "SubnetRef")
 	}
 	return nil
 }

@@ -18,27 +18,27 @@ package v1alpha1
 type LifeCycleState string
 
 const (
-	LifeCycleState_creating  LifeCycleState = "creating"
-	LifeCycleState_available LifeCycleState = "available"
-	LifeCycleState_updating  LifeCycleState = "updating"
-	LifeCycleState_deleting  LifeCycleState = "deleting"
-	LifeCycleState_deleted   LifeCycleState = "deleted"
-	LifeCycleState_error     LifeCycleState = "error"
+	LifeCycleState_AVAILABLE LifeCycleState = "AVAILABLE"
+	LifeCycleState_UPDATING  LifeCycleState = "UPDATING"
+	LifeCycleState_DELETING  LifeCycleState = "DELETING"
+	LifeCycleState_DELETED   LifeCycleState = "DELETED"
+	LifeCycleState_ERROR     LifeCycleState = "ERROR"
+	LifeCycleState_CREATING  LifeCycleState = "CREATING"
 )
 
 type PerformanceMode string
 
 const (
-	PerformanceMode_generalPurpose PerformanceMode = "generalPurpose"
-	PerformanceMode_maxIO          PerformanceMode = "maxIO"
+	PerformanceMode_GENERAL_PURPOSE PerformanceMode = "GENERAL_PURPOSE"
+	PerformanceMode_MAX_IO          PerformanceMode = "MAX_IO"
 )
 
 type ReplicationOverwriteProtection string
 
 const (
-	ReplicationOverwriteProtection_ENABLED     ReplicationOverwriteProtection = "ENABLED"
 	ReplicationOverwriteProtection_DISABLED    ReplicationOverwriteProtection = "DISABLED"
 	ReplicationOverwriteProtection_REPLICATING ReplicationOverwriteProtection = "REPLICATING"
+	ReplicationOverwriteProtection_ENABLED     ReplicationOverwriteProtection = "ENABLED"
 )
 
 type ReplicationStatus string
@@ -55,15 +55,15 @@ const (
 type Resource string
 
 const (
-	Resource_FILE_SYSTEM  Resource = "FILE_SYSTEM"
-	Resource_MOUNT_TARGET Resource = "MOUNT_TARGET"
+	Resource_FileSystem  Resource = "FileSystem"
+	Resource_MountTarget Resource = "MountTarget"
 )
 
 type ResourceIDType string
 
 const (
-	ResourceIDType_LONG_ID  ResourceIDType = "LONG_ID"
-	ResourceIDType_SHORT_ID ResourceIDType = "SHORT_ID"
+	ResourceIDType_LongId  ResourceIDType = "LongId"
+	ResourceIDType_ShortId ResourceIDType = "ShortId"
 )
 
 type Status string
@@ -78,9 +78,9 @@ const (
 type ThroughputMode string
 
 const (
-	ThroughputMode_bursting    ThroughputMode = "bursting"
-	ThroughputMode_provisioned ThroughputMode = "provisioned"
-	ThroughputMode_elastic     ThroughputMode = "elastic"
+	ThroughputMode_BURSTING    ThroughputMode = "BURSTING"
+	ThroughputMode_PROVISIONED ThroughputMode = "PROVISIONED"
+	ThroughputMode_ELASTIC     ThroughputMode = "ELASTIC"
 )
 
 type TransitionToArchiveRules string
@@ -89,25 +89,25 @@ const (
 	TransitionToArchiveRules_AFTER_1_DAY    TransitionToArchiveRules = "AFTER_1_DAY"
 	TransitionToArchiveRules_AFTER_7_DAYS   TransitionToArchiveRules = "AFTER_7_DAYS"
 	TransitionToArchiveRules_AFTER_14_DAYS  TransitionToArchiveRules = "AFTER_14_DAYS"
+	TransitionToArchiveRules_AFTER_365_DAYS TransitionToArchiveRules = "AFTER_365_DAYS"
+	TransitionToArchiveRules_AFTER_270_DAYS TransitionToArchiveRules = "AFTER_270_DAYS"
 	TransitionToArchiveRules_AFTER_30_DAYS  TransitionToArchiveRules = "AFTER_30_DAYS"
 	TransitionToArchiveRules_AFTER_60_DAYS  TransitionToArchiveRules = "AFTER_60_DAYS"
 	TransitionToArchiveRules_AFTER_90_DAYS  TransitionToArchiveRules = "AFTER_90_DAYS"
 	TransitionToArchiveRules_AFTER_180_DAYS TransitionToArchiveRules = "AFTER_180_DAYS"
-	TransitionToArchiveRules_AFTER_270_DAYS TransitionToArchiveRules = "AFTER_270_DAYS"
-	TransitionToArchiveRules_AFTER_365_DAYS TransitionToArchiveRules = "AFTER_365_DAYS"
 )
 
 type TransitionToIARules string
 
 const (
-	TransitionToIARules_AFTER_7_DAYS   TransitionToIARules = "AFTER_7_DAYS"
 	TransitionToIARules_AFTER_14_DAYS  TransitionToIARules = "AFTER_14_DAYS"
-	TransitionToIARules_AFTER_30_DAYS  TransitionToIARules = "AFTER_30_DAYS"
 	TransitionToIARules_AFTER_60_DAYS  TransitionToIARules = "AFTER_60_DAYS"
 	TransitionToIARules_AFTER_90_DAYS  TransitionToIARules = "AFTER_90_DAYS"
-	TransitionToIARules_AFTER_1_DAY    TransitionToIARules = "AFTER_1_DAY"
 	TransitionToIARules_AFTER_180_DAYS TransitionToIARules = "AFTER_180_DAYS"
 	TransitionToIARules_AFTER_270_DAYS TransitionToIARules = "AFTER_270_DAYS"
+	TransitionToIARules_AFTER_7_DAYS   TransitionToIARules = "AFTER_7_DAYS"
+	TransitionToIARules_AFTER_30_DAYS  TransitionToIARules = "AFTER_30_DAYS"
+	TransitionToIARules_AFTER_1_DAY    TransitionToIARules = "AFTER_1_DAY"
 	TransitionToIARules_AFTER_365_DAYS TransitionToIARules = "AFTER_365_DAYS"
 )
 

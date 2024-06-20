@@ -37,9 +37,10 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	ctrlrtwebhook "sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	svctypes "github.com/aws-controllers-k8s/efs-controller/apis/v1alpha1"
 	svcresource "github.com/aws-controllers-k8s/efs-controller/pkg/resource"
-	svcsdk "github.com/aws/aws-sdk-go/service/efs"
+	//svcsdk "github.com/aws/aws-sdk-go/service/efs"
+	svctypes "github.com/aws-controllers-k8s/efs-controller/apis/v1alpha1"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/efs"
 
 	_ "github.com/aws-controllers-k8s/efs-controller/pkg/resource/access_point"
 	_ "github.com/aws-controllers-k8s/efs-controller/pkg/resource/file_system"
@@ -49,9 +50,10 @@ import (
 )
 
 var (
-	awsServiceAPIGroup    = "efs.services.k8s.aws"
-	awsServiceAlias       = "efs"
-	awsServiceEndpointsID = svcsdk.EndpointsID
+	awsServiceAPIGroup = "efs.services.k8s.aws"
+	awsServiceAlias    = "efs"
+	//awsServiceEndpointsID   = svcsdk.EndpointsID
+	awsServiceEndpointsID = svcsdk.ServiceID
 	scheme                = runtime.NewScheme()
 	setupLog              = ctrlrt.Log.WithName("setup")
 )

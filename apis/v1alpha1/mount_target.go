@@ -22,20 +22,13 @@ import (
 
 // MountTargetSpec defines the desired state of MountTarget.
 type MountTargetSpec struct {
-
-	// The ID of the file system for which to create the mount target.
-	FileSystemID  *string                                  `json:"fileSystemID,omitempty"`
-	FileSystemRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"fileSystemRef,omitempty"`
-	// Valid IPv4 address within the address range of the specified subnet.
+	FileSystemID      *string                                    `json:"fileSystemID,omitempty"`
+	FileSystemRef     *ackv1alpha1.AWSResourceReferenceWrapper   `json:"fileSystemRef,omitempty"`
 	IPAddress         *string                                    `json:"ipAddress,omitempty"`
 	SecurityGroupRefs []*ackv1alpha1.AWSResourceReferenceWrapper `json:"securityGroupRefs,omitempty"`
-	// Up to five VPC security group IDs, of the form sg-xxxxxxxx. These must be
-	// for the same VPC as subnet specified.
-	SecurityGroups []*string `json:"securityGroups,omitempty"`
-	// The ID of the subnet to add the mount target in. For One Zone file systems,
-	// use the subnet that is associated with the file system's Availability Zone.
-	SubnetID  *string                                  `json:"subnetID,omitempty"`
-	SubnetRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"subnetRef,omitempty"`
+	SecurityGroups    []*string                                  `json:"securityGroups,omitempty"`
+	SubnetID          *string                                    `json:"subnetID,omitempty"`
+	SubnetRef         *ackv1alpha1.AWSResourceReferenceWrapper   `json:"subnetRef,omitempty"`
 }
 
 // MountTargetStatus defines the observed state of MountTarget
@@ -51,32 +44,18 @@ type MountTargetStatus struct {
 	// resource
 	// +kubebuilder:validation:Optional
 	Conditions []*ackv1alpha1.Condition `json:"conditions"`
-	// The unique and consistent identifier of the Availability Zone that the mount
-	// target resides in. For example, use1-az1 is an AZ ID for the us-east-1 Region
-	// and it has the same location in every Amazon Web Services account.
 	// +kubebuilder:validation:Optional
 	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
-	// The name of the Availability Zone in which the mount target is located. Availability
-	// Zones are independently mapped to names for each Amazon Web Services account.
-	// For example, the Availability Zone us-east-1a for your Amazon Web Services
-	// account might not be the same location as us-east-1a for another Amazon Web
-	// Services account.
 	// +kubebuilder:validation:Optional
 	AvailabilityZoneName *string `json:"availabilityZoneName,omitempty"`
-	// Lifecycle state of the mount target.
 	// +kubebuilder:validation:Optional
 	LifeCycleState *string `json:"lifeCycleState,omitempty"`
-	// System-assigned mount target ID.
 	// +kubebuilder:validation:Optional
 	MountTargetID *string `json:"mountTargetID,omitempty"`
-	// The ID of the network interface that Amazon EFS created when it created the
-	// mount target.
 	// +kubebuilder:validation:Optional
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
-	// Amazon Web Services account ID that owns the resource.
 	// +kubebuilder:validation:Optional
 	OwnerID *string `json:"ownerID,omitempty"`
-	// The virtual private cloud (VPC) ID that the mount target is configured in.
 	// +kubebuilder:validation:Optional
 	VPCID *string `json:"vpcID,omitempty"`
 }

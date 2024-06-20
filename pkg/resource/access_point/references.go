@@ -77,9 +77,6 @@ func validateReferenceFields(ko *svcapitypes.AccessPoint) error {
 	if ko.Spec.FileSystemRef != nil && ko.Spec.FileSystemID != nil {
 		return ackerr.ResourceReferenceAndIDNotSupportedFor("FileSystemID", "FileSystemRef")
 	}
-	if ko.Spec.FileSystemRef == nil && ko.Spec.FileSystemID == nil {
-		return ackerr.ResourceReferenceOrIDRequiredFor("FileSystemID", "FileSystemRef")
-	}
 	return nil
 }
 

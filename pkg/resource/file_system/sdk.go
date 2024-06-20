@@ -29,7 +29,9 @@ import (
 	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
 	"github.com/aws/aws-sdk-go/aws"
-	svcsdk "github.com/aws/aws-sdk-go/service/efs"
+	//svcsdk "github.com/aws/aws-sdk-go/service/efs"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/efs"
+	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/efs/types"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -41,7 +43,7 @@ var (
 	_ = &metav1.Time{}
 	_ = strings.ToLower("")
 	_ = &aws.JSONValue{}
-	_ = &svcsdk.EFS{}
+	//_ = &svcsdk.EFS{}
 	_ = &svcapitypes.FileSystem{}
 	_ = ackv1alpha1.AWSAccountID("")
 	_ = &ackerr.NotFound
@@ -72,11 +74,14 @@ func (rm *resourceManager) sdkFind(
 	if err != nil {
 		return nil, err
 	}
-	var resp *svcsdk.DescribeFileSystemsOutput
-	resp, err = rm.sdkapi.DescribeFileSystemsWithContext(ctx, input)
+
+	var resp *svcsdk.DescribeFileSystemsResponse
+	//resp, err = rm.sdkapi.DescribeFileSystemsWithContext(ctx, input)
+
+	resp, err = rm.clientV2.DescribeFileSystems(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "DescribeFileSystems", err)
 	if err != nil {
-		if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "FileSystemNotFound" {
+		if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "UNKNOWN" {
 			return nil, ackerr.NotFound
 		}
 		return nil, err
@@ -159,45 +164,40 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Spec.PerformanceMode = nil
 		}
-		if elem.ProvisionedThroughputInMibps != nil {
-			ko.Spec.ProvisionedThroughputInMiBps = elem.ProvisionedThroughputInMibps
-		} else {
-			ko.Spec.ProvisionedThroughputInMiBps = nil
-		}
 		if elem.SizeInBytes != nil {
-			f14 := &svcapitypes.FileSystemSize{}
+			f13 := &svcapitypes.FileSystemSize{}
 			if elem.SizeInBytes.Timestamp != nil {
-				f14.Timestamp = &metav1.Time{*elem.SizeInBytes.Timestamp}
+				f13.Timestamp = &metav1.Time{*elem.SizeInBytes.Timestamp}
 			}
 			if elem.SizeInBytes.Value != nil {
-				f14.Value = elem.SizeInBytes.Value
+				f13.Value = elem.SizeInBytes.Value
 			}
 			if elem.SizeInBytes.ValueInArchive != nil {
-				f14.ValueInArchive = elem.SizeInBytes.ValueInArchive
+				f13.ValueInArchive = elem.SizeInBytes.ValueInArchive
 			}
 			if elem.SizeInBytes.ValueInIA != nil {
-				f14.ValueInIA = elem.SizeInBytes.ValueInIA
+				f13.ValueInIA = elem.SizeInBytes.ValueInIA
 			}
 			if elem.SizeInBytes.ValueInStandard != nil {
-				f14.ValueInStandard = elem.SizeInBytes.ValueInStandard
+				f13.ValueInStandard = elem.SizeInBytes.ValueInStandard
 			}
-			ko.Status.SizeInBytes = f14
+			ko.Status.SizeInBytes = f13
 		} else {
 			ko.Status.SizeInBytes = nil
 		}
 		if elem.Tags != nil {
-			f15 := []*svcapitypes.Tag{}
-			for _, f15iter := range elem.Tags {
-				f15elem := &svcapitypes.Tag{}
-				if f15iter.Key != nil {
-					f15elem.Key = f15iter.Key
+			f14 := []*svcapitypes.Tag{}
+			for _, f14iter := range elem.Tags {
+				f14elem := &svcapitypes.Tag{}
+				if f14iter.Key != nil {
+					f14elem.Key = f14iter.Key
 				}
-				if f15iter.Value != nil {
-					f15elem.Value = f15iter.Value
+				if f14iter.Value != nil {
+					f14elem.Value = f14iter.Value
 				}
-				f15 = append(f15, f15elem)
+				f14 = append(f14, f14elem)
 			}
-			ko.Spec.Tags = f15
+			ko.Spec.Tags = f14
 		} else {
 			ko.Spec.Tags = nil
 		}
@@ -242,7 +242,7 @@ func (rm *resourceManager) newListRequestPayload(
 	res := &svcsdk.DescribeFileSystemsInput{}
 
 	if r.ko.Status.FileSystemID != nil {
-		res.SetFileSystemId(*r.ko.Status.FileSystemID)
+		res.FileSystemId = r.ko.Status.FileSystemID
 	}
 
 	return res, nil
@@ -269,7 +269,9 @@ func (rm *resourceManager) sdkCreate(
 
 	var resp *svcsdk.FileSystemDescription
 	_ = resp
-	resp, err = rm.sdkapi.CreateFileSystemWithContext(ctx, input)
+	//resp, err = rm.sdkapi.CreateFileSystemWithContext(ctx, input)
+
+	resp, err = rm.clientV2.CreateFileSystem(ctx, input)
 	rm.metrics.RecordAPICall("CREATE", "CreateFileSystem", err)
 	if err != nil {
 		return nil, err
@@ -349,45 +351,40 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Spec.PerformanceMode = nil
 	}
-	if resp.ProvisionedThroughputInMibps != nil {
-		ko.Spec.ProvisionedThroughputInMiBps = resp.ProvisionedThroughputInMibps
-	} else {
-		ko.Spec.ProvisionedThroughputInMiBps = nil
-	}
 	if resp.SizeInBytes != nil {
-		f14 := &svcapitypes.FileSystemSize{}
+		f13 := &svcapitypes.FileSystemSize{}
 		if resp.SizeInBytes.Timestamp != nil {
-			f14.Timestamp = &metav1.Time{*resp.SizeInBytes.Timestamp}
+			f13.Timestamp = &metav1.Time{*resp.SizeInBytes.Timestamp}
 		}
 		if resp.SizeInBytes.Value != nil {
-			f14.Value = resp.SizeInBytes.Value
+			f13.Value = resp.SizeInBytes.Value
 		}
 		if resp.SizeInBytes.ValueInArchive != nil {
-			f14.ValueInArchive = resp.SizeInBytes.ValueInArchive
+			f13.ValueInArchive = resp.SizeInBytes.ValueInArchive
 		}
 		if resp.SizeInBytes.ValueInIA != nil {
-			f14.ValueInIA = resp.SizeInBytes.ValueInIA
+			f13.ValueInIA = resp.SizeInBytes.ValueInIA
 		}
 		if resp.SizeInBytes.ValueInStandard != nil {
-			f14.ValueInStandard = resp.SizeInBytes.ValueInStandard
+			f13.ValueInStandard = resp.SizeInBytes.ValueInStandard
 		}
-		ko.Status.SizeInBytes = f14
+		ko.Status.SizeInBytes = f13
 	} else {
 		ko.Status.SizeInBytes = nil
 	}
 	if resp.Tags != nil {
-		f15 := []*svcapitypes.Tag{}
-		for _, f15iter := range resp.Tags {
-			f15elem := &svcapitypes.Tag{}
-			if f15iter.Key != nil {
-				f15elem.Key = f15iter.Key
+		f14 := []*svcapitypes.Tag{}
+		for _, f14iter := range resp.Tags {
+			f14elem := &svcapitypes.Tag{}
+			if f14iter.Key != nil {
+				f14elem.Key = f14iter.Key
 			}
-			if f15iter.Value != nil {
-				f15elem.Value = f15iter.Value
+			if f14iter.Value != nil {
+				f14elem.Value = f14iter.Value
 			}
-			f15 = append(f15, f15elem)
+			f14 = append(f14, f14elem)
 		}
-		ko.Spec.Tags = f15
+		ko.Spec.Tags = f14
 	} else {
 		ko.Spec.Tags = nil
 	}
@@ -419,39 +416,36 @@ func (rm *resourceManager) newCreateRequestPayload(
 	res := &svcsdk.CreateFileSystemInput{}
 
 	if r.ko.Spec.AvailabilityZoneName != nil {
-		res.SetAvailabilityZoneName(*r.ko.Spec.AvailabilityZoneName)
+		res.AvailabilityZoneName = r.ko.Spec.AvailabilityZoneName
 	}
 	if r.ko.Spec.Backup != nil {
-		res.SetBackup(*r.ko.Spec.Backup)
+		res.Backup = r.ko.Spec.Backup
 	}
 	if r.ko.Spec.Encrypted != nil {
-		res.SetEncrypted(*r.ko.Spec.Encrypted)
+		res.Encrypted = r.ko.Spec.Encrypted
 	}
 	if r.ko.Spec.KMSKeyID != nil {
-		res.SetKmsKeyId(*r.ko.Spec.KMSKeyID)
+		res.KmsKeyId = r.ko.Spec.KMSKeyID
 	}
 	if r.ko.Spec.PerformanceMode != nil {
-		res.SetPerformanceMode(*r.ko.Spec.PerformanceMode)
-	}
-	if r.ko.Spec.ProvisionedThroughputInMiBps != nil {
-		res.SetProvisionedThroughputInMibps(*r.ko.Spec.ProvisionedThroughputInMiBps)
+		res.PerformanceMode = svcsdktypes.PerformanceMode(*r.ko.Spec.PerformanceMode)
 	}
 	if r.ko.Spec.Tags != nil {
-		f6 := []*svcsdk.Tag{}
-		for _, f6iter := range r.ko.Spec.Tags {
-			f6elem := &svcsdk.Tag{}
-			if f6iter.Key != nil {
-				f6elem.SetKey(*f6iter.Key)
+		f5 := []svcsdktypes.Tag{}
+		for _, f5iter := range r.ko.Spec.Tags {
+			f5elem := &svcsdktypes.Tag{}
+			if f5iter.Key != nil {
+				f5elem.Key = f5iter.Key
 			}
-			if f6iter.Value != nil {
-				f6elem.SetValue(*f6iter.Value)
+			if f5iter.Value != nil {
+				f5elem.Value = f5iter.Value
 			}
-			f6 = append(f6, f6elem)
+			f5 = append(f5, f5elem)
 		}
-		res.SetTags(f6)
+		res.Tags = f5
 	}
 	if r.ko.Spec.ThroughputMode != nil {
-		res.SetThroughputMode(*r.ko.Spec.ThroughputMode)
+		res.ThroughputMode = svcsdktypes.ThroughputMode(*r.ko.Spec.ThroughputMode)
 	}
 
 	return res, nil
@@ -515,7 +509,7 @@ func (rm *resourceManager) sdkUpdate(
 		return nil, err
 	}
 
-	var resp *svcsdk.UpdateFileSystemOutput
+	var resp *svcsdk.FileSystemDescription
 	_ = resp
 	resp, err = rm.sdkapi.UpdateFileSystemWithContext(ctx, input)
 	return desired, nil
@@ -560,11 +554,11 @@ func (rm *resourceManager) sdkUpdate(
 		ko.Status.FileSystemID = nil
 	}
 	if resp.FileSystemProtection != nil {
-		f7 := &svcapitypes.UpdateFileSystemProtectionInput{}
+		f6 := &svcapitypes.UpdateFileSystemProtectionInput{}
 		if resp.FileSystemProtection.ReplicationOverwriteProtection != nil {
-			f7.ReplicationOverwriteProtection = resp.FileSystemProtection.ReplicationOverwriteProtection
+			f6.ReplicationOverwriteProtection = resp.FileSystemProtection.ReplicationOverwriteProtection
 		}
-		ko.Spec.FileSystemProtection = f7
+		ko.Spec.FileSystemProtection = f6
 	} else {
 		ko.Spec.FileSystemProtection = nil
 	}
@@ -598,45 +592,40 @@ func (rm *resourceManager) sdkUpdate(
 	} else {
 		ko.Spec.PerformanceMode = nil
 	}
-	if resp.ProvisionedThroughputInMibps != nil {
-		ko.Spec.ProvisionedThroughputInMiBps = resp.ProvisionedThroughputInMibps
-	} else {
-		ko.Spec.ProvisionedThroughputInMiBps = nil
-	}
 	if resp.SizeInBytes != nil {
-		f15 := &svcapitypes.FileSystemSize{}
+		f13 := &svcapitypes.FileSystemSize{}
 		if resp.SizeInBytes.Timestamp != nil {
-			f15.Timestamp = &metav1.Time{*resp.SizeInBytes.Timestamp}
+			f13.Timestamp = &metav1.Time{*resp.SizeInBytes.Timestamp}
 		}
 		if resp.SizeInBytes.Value != nil {
-			f15.Value = resp.SizeInBytes.Value
+			f13.Value = resp.SizeInBytes.Value
 		}
 		if resp.SizeInBytes.ValueInArchive != nil {
-			f15.ValueInArchive = resp.SizeInBytes.ValueInArchive
+			f13.ValueInArchive = resp.SizeInBytes.ValueInArchive
 		}
 		if resp.SizeInBytes.ValueInIA != nil {
-			f15.ValueInIA = resp.SizeInBytes.ValueInIA
+			f13.ValueInIA = resp.SizeInBytes.ValueInIA
 		}
 		if resp.SizeInBytes.ValueInStandard != nil {
-			f15.ValueInStandard = resp.SizeInBytes.ValueInStandard
+			f13.ValueInStandard = resp.SizeInBytes.ValueInStandard
 		}
-		ko.Status.SizeInBytes = f15
+		ko.Status.SizeInBytes = f13
 	} else {
 		ko.Status.SizeInBytes = nil
 	}
 	if resp.Tags != nil {
-		f16 := []*svcapitypes.Tag{}
-		for _, f16iter := range resp.Tags {
-			f16elem := &svcapitypes.Tag{}
-			if f16iter.Key != nil {
-				f16elem.Key = f16iter.Key
+		f14 := []*svcapitypes.Tag{}
+		for _, f14iter := range resp.Tags {
+			f14elem := &svcapitypes.Tag{}
+			if f14iter.Key != nil {
+				f14elem.Key = f14iter.Key
 			}
-			if f16iter.Value != nil {
-				f16elem.Value = f16iter.Value
+			if f14iter.Value != nil {
+				f14elem.Value = f14iter.Value
 			}
-			f16 = append(f16, f16elem)
+			f14 = append(f14, f14elem)
 		}
-		ko.Spec.Tags = f16
+		ko.Spec.Tags = f14
 	} else {
 		ko.Spec.Tags = nil
 	}
@@ -660,13 +649,10 @@ func (rm *resourceManager) newUpdateRequestPayload(
 	res := &svcsdk.UpdateFileSystemInput{}
 
 	if r.ko.Status.FileSystemID != nil {
-		res.SetFileSystemId(*r.ko.Status.FileSystemID)
-	}
-	if r.ko.Spec.ProvisionedThroughputInMiBps != nil {
-		res.SetProvisionedThroughputInMibps(*r.ko.Spec.ProvisionedThroughputInMiBps)
+		res.FileSystemId = r.ko.Status.FileSystemID
 	}
 	if r.ko.Spec.ThroughputMode != nil {
-		res.SetThroughputMode(*r.ko.Spec.ThroughputMode)
+		res.ThroughputMode = svcsdktypes.ThroughputMode(*r.ko.Spec.ThroughputMode)
 	}
 
 	return res, nil
@@ -688,7 +674,9 @@ func (rm *resourceManager) sdkDelete(
 	}
 	var resp *svcsdk.DeleteFileSystemOutput
 	_ = resp
-	resp, err = rm.sdkapi.DeleteFileSystemWithContext(ctx, input)
+	//resp, err = rm.sdkapi.DeleteFileSystemWithContext(ctx, input)
+	resp, err = rm.clientV2.DeleteFileSystem(ctx, input)
+
 	rm.metrics.RecordAPICall("DELETE", "DeleteFileSystem", err)
 	return nil, err
 }
@@ -701,7 +689,7 @@ func (rm *resourceManager) newDeleteRequestPayload(
 	res := &svcsdk.DeleteFileSystemInput{}
 
 	if r.ko.Status.FileSystemID != nil {
-		res.SetFileSystemId(*r.ko.Status.FileSystemID)
+		res.FileSystemId = r.ko.Status.FileSystemID
 	}
 
 	return res, nil

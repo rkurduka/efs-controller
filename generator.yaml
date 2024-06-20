@@ -6,15 +6,21 @@ ignore:
       - ReplicationConfiguration
   field_paths:
   - CreateFileSystemInput.CreationToken
+  #- CreateFileSystemRequest.CreationToken
   - FileSystemDescription.CreationToken
   - PutBackupPolicyInput.FileSystemId
+  #- PutBackupPolicyRequest.FileSystemId
   - PutLifecycleConfigurationInput.FileSystemId
+  #- PutLifecycleConfigurationRequest.FileSystemId
   - PutFileSystemPolicyInput.FileSystemId
+  #- PutFileSystemPolicyRequest.FileSytemId
   - UpdateFileSystemProtectionInput.FileSystemId
+  #- UpdateFileSystemProtectionRequest.FileSystemId
   # Well, FileSystem idempotency token is called CreationToken
   # and AccessPoint idempotency token is called ClientToken.....
   - CreateAccessPointInput.ClientToken
-  - AccessPointDescription.ClientToken
+  #- CreateAccessPointRequest.ClientToken
+  - AccessPointDescription.ClientToken 
   shape_names:
   - SecondaryGids
   - ClientToken

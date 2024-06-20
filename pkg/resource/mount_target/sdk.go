@@ -29,7 +29,9 @@ import (
 	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
 	"github.com/aws/aws-sdk-go/aws"
-	svcsdk "github.com/aws/aws-sdk-go/service/efs"
+	//svcsdk "github.com/aws/aws-sdk-go/service/efs"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/efs"
+	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/efs/types"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -41,7 +43,7 @@ var (
 	_ = &metav1.Time{}
 	_ = strings.ToLower("")
 	_ = &aws.JSONValue{}
-	_ = &svcsdk.EFS{}
+	//_ = &svcsdk.EFS{}
 	_ = &svcapitypes.MountTarget{}
 	_ = ackv1alpha1.AWSAccountID("")
 	_ = &ackerr.NotFound
@@ -73,11 +75,14 @@ func (rm *resourceManager) sdkFind(
 		return nil, err
 	}
 	input.FileSystemId = nil
-	var resp *svcsdk.DescribeMountTargetsOutput
-	resp, err = rm.sdkapi.DescribeMountTargetsWithContext(ctx, input)
+
+	var resp *svcsdk.DescribeMountTargetsResponse
+	//resp, err = rm.sdkapi.DescribeMountTargetsWithContext(ctx, input)
+
+	resp, err = rm.clientV2.DescribeMountTargets(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "DescribeMountTargets", err)
 	if err != nil {
-		if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "FileSystemNotFound" {
+		if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "UNKNOWN" {
 			return nil, ackerr.NotFound
 		}
 		return nil, err
@@ -175,10 +180,10 @@ func (rm *resourceManager) newListRequestPayload(
 	res := &svcsdk.DescribeMountTargetsInput{}
 
 	if r.ko.Spec.FileSystemID != nil {
-		res.SetFileSystemId(*r.ko.Spec.FileSystemID)
+		res.FileSystemId = r.ko.Spec.FileSystemID
 	}
 	if r.ko.Status.MountTargetID != nil {
-		res.SetMountTargetId(*r.ko.Status.MountTargetID)
+		res.MountTargetId = r.ko.Status.MountTargetID
 	}
 
 	return res, nil
@@ -203,7 +208,9 @@ func (rm *resourceManager) sdkCreate(
 
 	var resp *svcsdk.MountTargetDescription
 	_ = resp
-	resp, err = rm.sdkapi.CreateMountTargetWithContext(ctx, input)
+	//resp, err = rm.sdkapi.CreateMountTargetWithContext(ctx, input)
+
+	resp, err = rm.clientV2.CreateMountTarget(ctx, input)
 	rm.metrics.RecordAPICall("CREATE", "CreateMountTarget", err)
 	if err != nil {
 		return nil, err
@@ -285,22 +292,22 @@ func (rm *resourceManager) newCreateRequestPayload(
 	res := &svcsdk.CreateMountTargetInput{}
 
 	if r.ko.Spec.FileSystemID != nil {
-		res.SetFileSystemId(*r.ko.Spec.FileSystemID)
+		res.FileSystemId = r.ko.Spec.FileSystemID
 	}
 	if r.ko.Spec.IPAddress != nil {
-		res.SetIpAddress(*r.ko.Spec.IPAddress)
+		res.IpAddress = r.ko.Spec.IPAddress
 	}
 	if r.ko.Spec.SecurityGroups != nil {
-		f2 := []*string{}
+		f2 := []string{}
 		for _, f2iter := range r.ko.Spec.SecurityGroups {
 			var f2elem string
 			f2elem = *f2iter
-			f2 = append(f2, &f2elem)
+			f2 = append(f2, f2elem)
 		}
-		res.SetSecurityGroups(f2)
+		res.SecurityGroups = f2
 	}
 	if r.ko.Spec.SubnetID != nil {
-		res.SetSubnetId(*r.ko.Spec.SubnetID)
+		res.SubnetId = r.ko.Spec.SubnetID
 	}
 
 	return res, nil
@@ -333,7 +340,9 @@ func (rm *resourceManager) sdkDelete(
 	}
 	var resp *svcsdk.DeleteMountTargetOutput
 	_ = resp
-	resp, err = rm.sdkapi.DeleteMountTargetWithContext(ctx, input)
+	//resp, err = rm.sdkapi.DeleteMountTargetWithContext(ctx, input)
+	resp, err = rm.clientV2.DeleteMountTarget(ctx, input)
+
 	rm.metrics.RecordAPICall("DELETE", "DeleteMountTarget", err)
 	return nil, err
 }
@@ -346,7 +355,7 @@ func (rm *resourceManager) newDeleteRequestPayload(
 	res := &svcsdk.DeleteMountTargetInput{}
 
 	if r.ko.Status.MountTargetID != nil {
-		res.SetMountTargetId(*r.ko.Status.MountTargetID)
+		res.MountTargetId = r.ko.Status.MountTargetID
 	}
 
 	return res, nil
