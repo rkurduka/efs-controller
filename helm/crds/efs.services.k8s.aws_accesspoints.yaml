@@ -84,15 +84,15 @@ spec:
               posixUser:
                 properties:
                   gid:
-                    format: int32
+                    format: int64
                     type: integer
                   secondaryGIDs:
                     items:
-                      format: int32
+                      format: int64
                       type: integer
                     type: array
                   uid:
-                    format: int32
+                    format: int64
                     type: integer
                 type: object
               rootDirectory:
@@ -100,10 +100,10 @@ spec:
                   creationInfo:
                     properties:
                       ownerGID:
-                        format: int32
+                        format: int64
                         type: integer
                       ownerUID:
-                        format: int32
+                        format: int64
                         type: integer
                       permissions:
                         type: string

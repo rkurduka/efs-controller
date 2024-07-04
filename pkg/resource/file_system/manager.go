@@ -364,9 +364,11 @@ func (rm *resourceManager) onSuccess(
 	if r == nil {
 		return nil, nil
 	}
+	fmt.Println("On success started")
 	r1, updated := rm.updateConditions(r, true, nil)
 	if !updated {
 		return r, nil
 	}
+	fmt.Println("On success started")
 	return r1, nil
 }

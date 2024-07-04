@@ -48,6 +48,18 @@ type BackupPolicy struct {
 	Status *string `json:"status,omitempty"`
 }
 
+type CreateAccessPointOutput struct {
+	AccessPointARN *string        `json:"accessPointARN,omitempty"`
+	AccessPointID  *string        `json:"accessPointID,omitempty"`
+	FileSystemID   *string        `json:"fileSystemID,omitempty"`
+	LifeCycleState *string        `json:"lifeCycleState,omitempty"`
+	Name           *string        `json:"name,omitempty"`
+	OwnerID        *string        `json:"ownerID,omitempty"`
+	PosixUser      *PosixUser     `json:"posixUser,omitempty"`
+	RootDirectory  *RootDirectory `json:"rootDirectory,omitempty"`
+	Tags           []*Tag         `json:"tags,omitempty"`
+}
+
 type CreateAccessPointRequest struct {
 	FileSystemID  *string        `json:"fileSystemID,omitempty"`
 	PosixUser     *PosixUser     `json:"posixUser,omitempty"`
@@ -63,6 +75,19 @@ type CreateFileSystemRequest struct {
 	PerformanceMode      *string `json:"performanceMode,omitempty"`
 	Tags                 []*Tag  `json:"tags,omitempty"`
 	ThroughputMode       *string `json:"throughputMode,omitempty"`
+}
+
+type CreateMountTargetOutput struct {
+	AvailabilityZoneID   *string `json:"availabilityZoneID,omitempty"`
+	AvailabilityZoneName *string `json:"availabilityZoneName,omitempty"`
+	FileSystemID         *string `json:"fileSystemID,omitempty"`
+	IPAddress            *string `json:"ipAddress,omitempty"`
+	LifeCycleState       *string `json:"lifeCycleState,omitempty"`
+	MountTargetID        *string `json:"mountTargetID,omitempty"`
+	NetworkInterfaceID   *string `json:"networkInterfaceID,omitempty"`
+	OwnerID              *string `json:"ownerID,omitempty"`
+	SubnetID             *string `json:"subnetID,omitempty"`
+	VPCID                *string `json:"vpcID,omitempty"`
 }
 
 type CreateMountTargetRequest struct {
@@ -82,8 +107,8 @@ type CreateTagsRequest struct {
 }
 
 type CreationInfo struct {
-	OwnerGID    *int32  `json:"ownerGID,omitempty"`
-	OwnerUID    *int32  `json:"ownerUID,omitempty"`
+	OwnerGID    *int64  `json:"ownerGID,omitempty"`
+	OwnerUID    *int64  `json:"ownerUID,omitempty"`
 	Permissions *string `json:"permissions,omitempty"`
 }
 
@@ -114,13 +139,22 @@ type DeleteTagsRequest struct {
 type DescribeAccessPointsRequest struct {
 	AccessPointID *string `json:"accessPointID,omitempty"`
 	FileSystemID  *string `json:"fileSystemID,omitempty"`
-	MaxResults    *int32  `json:"maxResults,omitempty"`
+	MaxResults    *int64  `json:"maxResults,omitempty"`
 	NextToken     *string `json:"nextToken,omitempty"`
 }
 
+type DescribeAccessPointsResponse struct {
+	AccessPoints []*CreateAccessPointOutput `json:"accessPoints,omitempty"`
+	NextToken    *string                    `json:"nextToken,omitempty"`
+}
+
 type DescribeAccountPreferencesRequest struct {
-	MaxResults *int32  `json:"maxResults,omitempty"`
+	MaxResults *int64  `json:"maxResults,omitempty"`
 	NextToken  *string `json:"nextToken,omitempty"`
+}
+
+type DescribeAccountPreferencesResponse struct {
+	NextToken *string `json:"nextToken,omitempty"`
 }
 
 type DescribeBackupPolicyRequest struct {
@@ -135,7 +169,13 @@ type DescribeFileSystemsRequest struct {
 	CreationToken *string `json:"creationToken,omitempty"`
 	FileSystemID  *string `json:"fileSystemID,omitempty"`
 	Marker        *string `json:"marker,omitempty"`
-	MaxItems      *int32  `json:"maxItems,omitempty"`
+	MaxItems      *int64  `json:"maxItems,omitempty"`
+}
+
+type DescribeFileSystemsResponse struct {
+	FileSystems []*FileSystemDescription `json:"fileSystems,omitempty"`
+	Marker      *string                  `json:"marker,omitempty"`
+	NextMarker  *string                  `json:"nextMarker,omitempty"`
 }
 
 type DescribeLifecycleConfigurationRequest struct {
@@ -146,24 +186,44 @@ type DescribeMountTargetSecurityGroupsRequest struct {
 	MountTargetID *string `json:"mountTargetID,omitempty"`
 }
 
+type DescribeMountTargetSecurityGroupsResponse struct {
+	SecurityGroups []*string `json:"securityGroups,omitempty"`
+}
+
 type DescribeMountTargetsRequest struct {
 	AccessPointID *string `json:"accessPointID,omitempty"`
 	FileSystemID  *string `json:"fileSystemID,omitempty"`
 	Marker        *string `json:"marker,omitempty"`
-	MaxItems      *int32  `json:"maxItems,omitempty"`
+	MaxItems      *int64  `json:"maxItems,omitempty"`
 	MountTargetID *string `json:"mountTargetID,omitempty"`
+}
+
+type DescribeMountTargetsResponse struct {
+	Marker       *string                    `json:"marker,omitempty"`
+	MountTargets []*CreateMountTargetOutput `json:"mountTargets,omitempty"`
+	NextMarker   *string                    `json:"nextMarker,omitempty"`
 }
 
 type DescribeReplicationConfigurationsRequest struct {
 	FileSystemID *string `json:"fileSystemID,omitempty"`
-	MaxResults   *int32  `json:"maxResults,omitempty"`
+	MaxResults   *int64  `json:"maxResults,omitempty"`
 	NextToken    *string `json:"nextToken,omitempty"`
+}
+
+type DescribeReplicationConfigurationsResponse struct {
+	NextToken *string `json:"nextToken,omitempty"`
 }
 
 type DescribeTagsRequest struct {
 	FileSystemID *string `json:"fileSystemID,omitempty"`
 	Marker       *string `json:"marker,omitempty"`
-	MaxItems     *int32  `json:"maxItems,omitempty"`
+	MaxItems     *int64  `json:"maxItems,omitempty"`
+}
+
+type DescribeTagsResponse struct {
+	Marker     *string `json:"marker,omitempty"`
+	NextMarker *string `json:"nextMarker,omitempty"`
+	Tags       []*Tag  `json:"tags,omitempty"`
 }
 
 type Destination struct {
@@ -182,22 +242,22 @@ type FileSystemAlreadyExists struct {
 }
 
 type FileSystemDescription struct {
-	AvailabilityZoneID   *string                          `json:"availabilityZoneID,omitempty"`
-	AvailabilityZoneName *string                          `json:"availabilityZoneName,omitempty"`
-	CreationTime         *metav1.Time                     `json:"creationTime,omitempty"`
-	Encrypted            *bool                            `json:"encrypted,omitempty"`
-	FileSystemARN        *string                          `json:"fileSystemARN,omitempty"`
-	FileSystemID         *string                          `json:"fileSystemID,omitempty"`
-	FileSystemProtection *FileSystemProtectionDescription `json:"fileSystemProtection,omitempty"`
-	KMSKeyID             *string                          `json:"kmsKeyID,omitempty"`
-	LifeCycleState       *string                          `json:"lifeCycleState,omitempty"`
-	Name                 *string                          `json:"name,omitempty"`
-	NumberOfMountTargets *int32                           `json:"numberOfMountTargets,omitempty"`
-	OwnerID              *string                          `json:"ownerID,omitempty"`
-	PerformanceMode      *string                          `json:"performanceMode,omitempty"`
-	SizeInBytes          *FileSystemSize                  `json:"sizeInBytes,omitempty"`
-	Tags                 []*Tag                           `json:"tags,omitempty"`
-	ThroughputMode       *string                          `json:"throughputMode,omitempty"`
+	AvailabilityZoneID   *string                           `json:"availabilityZoneID,omitempty"`
+	AvailabilityZoneName *string                           `json:"availabilityZoneName,omitempty"`
+	CreationTime         *metav1.Time                      `json:"creationTime,omitempty"`
+	Encrypted            *bool                             `json:"encrypted,omitempty"`
+	FileSystemARN        *string                           `json:"fileSystemARN,omitempty"`
+	FileSystemID         *string                           `json:"fileSystemID,omitempty"`
+	FileSystemProtection *UpdateFileSystemProtectionOutput `json:"fileSystemProtection,omitempty"`
+	KMSKeyID             *string                           `json:"kmsKeyID,omitempty"`
+	LifeCycleState       *string                           `json:"lifeCycleState,omitempty"`
+	Name                 *string                           `json:"name,omitempty"`
+	NumberOfMountTargets *int64                            `json:"numberOfMountTargets,omitempty"`
+	OwnerID              *string                           `json:"ownerID,omitempty"`
+	PerformanceMode      *string                           `json:"performanceMode,omitempty"`
+	SizeInBytes          *FileSystemSize                   `json:"sizeInBytes,omitempty"`
+	Tags                 []*Tag                            `json:"tags,omitempty"`
+	ThroughputMode       *string                           `json:"throughputMode,omitempty"`
 }
 
 type FileSystemProtectionDescription struct {
@@ -206,10 +266,10 @@ type FileSystemProtectionDescription struct {
 
 type FileSystemSize struct {
 	Timestamp       *metav1.Time `json:"timestamp,omitempty"`
-	Value           *int32       `json:"value,omitempty"`
-	ValueInArchive  *int32       `json:"valueInArchive,omitempty"`
-	ValueInIA       *int32       `json:"valueInIA,omitempty"`
-	ValueInStandard *int32       `json:"valueInStandard,omitempty"`
+	Value           *int64       `json:"value,omitempty"`
+	ValueInArchive  *int64       `json:"valueInArchive,omitempty"`
+	ValueInIA       *int64       `json:"valueInIA,omitempty"`
+	ValueInStandard *int64       `json:"valueInStandard,omitempty"`
 }
 
 type LifecyclePolicy struct {
@@ -219,8 +279,13 @@ type LifecyclePolicy struct {
 }
 
 type ListTagsForResourceRequest struct {
-	MaxResults *int32  `json:"maxResults,omitempty"`
+	MaxResults *int64  `json:"maxResults,omitempty"`
 	NextToken  *string `json:"nextToken,omitempty"`
+}
+
+type ListTagsForResourceResponse struct {
+	NextToken *string `json:"nextToken,omitempty"`
+	Tags      []*Tag  `json:"tags,omitempty"`
 }
 
 type ModifyMountTargetSecurityGroupsRequest struct {
@@ -242,9 +307,9 @@ type MountTargetDescription struct {
 }
 
 type PosixUser struct {
-	GID           *int32   `json:"gid,omitempty"`
-	SecondaryGIDs []*int32 `json:"secondaryGIDs,omitempty"`
-	UID           *int32   `json:"uid,omitempty"`
+	GID           *int64   `json:"gid,omitempty"`
+	SecondaryGIDs []*int64 `json:"secondaryGIDs,omitempty"`
+	UID           *int64   `json:"uid,omitempty"`
 }
 
 type PutBackupPolicyRequest struct {
@@ -257,6 +322,13 @@ type PutFileSystemPolicyRequest struct {
 
 type PutLifecycleConfigurationRequest struct {
 	LifecyclePolicies []*LifecyclePolicy `json:"lifecyclePolicies,omitempty"`
+}
+
+type ReplicationConfigurationDescription struct {
+	CreationTime                *metav1.Time `json:"creationTime,omitempty"`
+	OriginalSourceFileSystemARN *string      `json:"originalSourceFileSystemARN,omitempty"`
+	SourceFileSystemARN         *string      `json:"sourceFileSystemARN,omitempty"`
+	SourceFileSystemID          *string      `json:"sourceFileSystemID,omitempty"`
 }
 
 type RootDirectory struct {
@@ -274,6 +346,10 @@ type TagResourceRequest struct {
 }
 
 type UpdateFileSystemProtectionInput struct {
+	ReplicationOverwriteProtection *string `json:"replicationOverwriteProtection,omitempty"`
+}
+
+type UpdateFileSystemProtectionOutput struct {
 	ReplicationOverwriteProtection *string `json:"replicationOverwriteProtection,omitempty"`
 }
 

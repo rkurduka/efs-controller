@@ -76,7 +76,7 @@ func (rm *resourceManager) sdkFind(
 	}
 	input.FileSystemId = nil
 
-	var resp *svcsdk.DescribeAccessPointsResponse
+	var resp *svcsdk.DescribeAccessPointsOutput
 	//resp, err = rm.sdkapi.DescribeAccessPointsWithContext(ctx, input)
 
 	resp, err = rm.clientV2.DescribeAccessPoints(ctx, input)
@@ -111,8 +111,8 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Spec.FileSystemID = nil
 		}
-		if elem.LifeCycleState != nil {
-			ko.Status.LifeCycleState = elem.LifeCycleState
+		if elem.LifeCycleState != "" {
+			ko.Status.LifeCycleState = (*string)(&elem.LifeCycleState)
 		} else {
 			ko.Status.LifeCycleState = nil
 		}
@@ -132,11 +132,12 @@ func (rm *resourceManager) sdkFind(
 				f6.GID = elem.PosixUser.Gid
 			}
 			if elem.PosixUser.SecondaryGids != nil {
-				f6f1 := []*int32{}
+				f6f1 := []*int64{}
 				for _, f6f1iter := range elem.PosixUser.SecondaryGids {
-					var f6f1elem int32
-					f6f1elem = f6f1iter
-					f6f1 = append(f6f1, &f6f1elem)
+					var f6f1elem *int64
+					number := int64(f6f1iter)
+					f6f1elem = &number
+					f6f1 = append(f6f1, f6f1elem)
 				}
 				f6.SecondaryGIDs = f6f1
 			}
@@ -244,9 +245,13 @@ func (rm *resourceManager) sdkCreate(
 		return nil, err
 	}
 	// This is an idempotency token required in the API call...
-	input.SetClientToken(getIdempotencyToken())
+	//input.SetClientToken(getIdempotencyToken())
 
-	var resp *svcsdk.AccessPointDescription
+	//For AWS-SDK-GO-V2
+	token := getIdempotencyToken()
+	input.ClientToken = &token
+
+	var resp *svcsdk.CreateAccessPointOutput
 	_ = resp
 	//resp, err = rm.sdkapi.CreateAccessPointWithContext(ctx, input)
 
@@ -276,8 +281,8 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Spec.FileSystemID = nil
 	}
-	if resp.LifeCycleState != nil {
-		ko.Status.LifeCycleState = resp.LifeCycleState
+	if resp.LifeCycleState != "" {
+		ko.Status.LifeCycleState = (*string)(&resp.LifeCycleState)
 	} else {
 		ko.Status.LifeCycleState = nil
 	}
@@ -297,11 +302,12 @@ func (rm *resourceManager) sdkCreate(
 			f6.GID = resp.PosixUser.Gid
 		}
 		if resp.PosixUser.SecondaryGids != nil {
-			f6f1 := []*int32{}
+			f6f1 := []*int64{}
 			for _, f6f1iter := range resp.PosixUser.SecondaryGids {
-				var f6f1elem int32
-				f6f1elem = f6f1iter
-				f6f1 = append(f6f1, &f6f1elem)
+				var f6f1elem *int64
+				number := int64(f6f1iter)
+				f6f1elem = &number
+				f6f1 = append(f6f1, f6f1elem)
 			}
 			f6.SecondaryGIDs = f6f1
 		}
@@ -372,9 +378,9 @@ func (rm *resourceManager) newCreateRequestPayload(
 			f1.Gid = r.ko.Spec.PosixUser.GID
 		}
 		if r.ko.Spec.PosixUser.SecondaryGIDs != nil {
-			f1f1 := []int32{}
+			f1f1 := []int64{}
 			for _, f1f1iter := range r.ko.Spec.PosixUser.SecondaryGIDs {
-				var f1f1elem int32
+				var f1f1elem int64
 				f1f1elem = *f1f1iter
 				f1f1 = append(f1f1, f1f1elem)
 			}
@@ -408,7 +414,7 @@ func (rm *resourceManager) newCreateRequestPayload(
 	if r.ko.Spec.Tags != nil {
 		f3 := []svcsdktypes.Tag{}
 		for _, f3iter := range r.ko.Spec.Tags {
-			f3elem := &svcsdktypes.Tag{}
+			f3elem := svcsdktypes.Tag{}
 			if f3iter.Key != nil {
 				f3elem.Key = f3iter.Key
 			}
@@ -444,6 +450,7 @@ func (rm *resourceManager) sdkDelete(
 	defer func() {
 		exit(err)
 	}()
+	
 	input, err := rm.newDeleteRequestPayload(r)
 	if err != nil {
 		return nil, err
@@ -452,7 +459,7 @@ func (rm *resourceManager) sdkDelete(
 	_ = resp
 	//resp, err = rm.sdkapi.DeleteAccessPointWithContext(ctx, input)
 	resp, err = rm.clientV2.DeleteAccessPoint(ctx, input)
-
+	
 	rm.metrics.RecordAPICall("DELETE", "DeleteAccessPoint", err)
 	return nil, err
 }
@@ -500,6 +507,7 @@ func (rm *resourceManager) updateConditions(
 	rm.setStatusDefaults(ko)
 
 	// Terminal condition
+
 	var terminalCondition *ackv1alpha1.Condition = nil
 	var recoverableCondition *ackv1alpha1.Condition = nil
 	var syncCondition *ackv1alpha1.Condition = nil
@@ -563,6 +571,8 @@ func (rm *resourceManager) updateConditions(
 	if terminalCondition != nil || recoverableCondition != nil || syncCondition != nil {
 		return &resource{ko}, true // updated
 	}
+
+
 	return nil, false // not updated
 }
 

@@ -60,7 +60,7 @@ type FileSystemStatus struct {
 	// +kubebuilder:validation:Optional
 	Name *string `json:"name,omitempty"`
 	// +kubebuilder:validation:Optional
-	NumberOfMountTargets *int32 `json:"numberOfMountTargets,omitempty"`
+	NumberOfMountTargets *int64 `json:"numberOfMountTargets,omitempty"`
 	// +kubebuilder:validation:Optional
 	OwnerID *string `json:"ownerID,omitempty"`
 	// +kubebuilder:validation:Optional

@@ -31,7 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	//svcsdk "github.com/aws/aws-sdk-go/service/efs"
 	svcsdk "github.com/aws/aws-sdk-go-v2/service/efs"
-	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/efs/types"
+	//svcsdktypes "github.com/aws/aws-sdk-go-v2/service/efs/types"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -76,7 +76,7 @@ func (rm *resourceManager) sdkFind(
 	}
 	input.FileSystemId = nil
 
-	var resp *svcsdk.DescribeMountTargetsResponse
+	var resp *svcsdk.DescribeMountTargetsOutput
 	//resp, err = rm.sdkapi.DescribeMountTargetsWithContext(ctx, input)
 
 	resp, err = rm.clientV2.DescribeMountTargets(ctx, input)
@@ -114,8 +114,8 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Spec.IPAddress = nil
 		}
-		if elem.LifeCycleState != nil {
-			ko.Status.LifeCycleState = elem.LifeCycleState
+		if elem.LifeCycleState != "" {
+			ko.Status.LifeCycleState = (*string)(&elem.LifeCycleState)
 		} else {
 			ko.Status.LifeCycleState = nil
 		}
@@ -206,7 +206,7 @@ func (rm *resourceManager) sdkCreate(
 		return nil, err
 	}
 
-	var resp *svcsdk.MountTargetDescription
+	var resp *svcsdk.CreateMountTargetOutput
 	_ = resp
 	//resp, err = rm.sdkapi.CreateMountTargetWithContext(ctx, input)
 
@@ -239,8 +239,8 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Spec.IPAddress = nil
 	}
-	if resp.LifeCycleState != nil {
-		ko.Status.LifeCycleState = resp.LifeCycleState
+	if resp.LifeCycleState != "" {
+		ko.Status.LifeCycleState = (*string)(&resp.LifeCycleState)
 	} else {
 		ko.Status.LifeCycleState = nil
 	}

@@ -213,7 +213,7 @@ spec:
               name:
                 type: string
               numberOfMountTargets:
-                format: int32
+                format: int64
                 type: integer
               ownerID:
                 type: string
@@ -223,16 +223,16 @@ spec:
                     format: date-time
                     type: string
                   value:
-                    format: int32
+                    format: int64
                     type: integer
                   valueInArchive:
-                    format: int32
+                    format: int64
                     type: integer
                   valueInIA:
-                    format: int32
+                    format: int64
                     type: integer
                   valueInStandard:
-                    format: int32
+                    format: int64
                     type: integer
                 type: object
             type: object

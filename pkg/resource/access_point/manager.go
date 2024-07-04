@@ -110,6 +110,7 @@ func (rm *resourceManager) ReadOne(
 		// Should never happen... if it does, it's buggy code.
 		panic("resource manager's ReadOne() method received resource with nil CR object")
 	}
+	
 	observed, err := rm.sdkFind(ctx, r)
 	if err != nil {
 		if observed != nil {
@@ -117,7 +118,9 @@ func (rm *resourceManager) ReadOne(
 		}
 		return rm.onError(r, err)
 	}
+	
 	return rm.onSuccess(observed)
+
 }
 
 // Create attempts to create the supplied AWSResource in the backend AWS
@@ -365,6 +368,7 @@ func (rm *resourceManager) onSuccess(
 		return nil, nil
 	}
 	r1, updated := rm.updateConditions(r, true, nil)
+	
 	if !updated {
 		return r, nil
 	}

@@ -63,7 +63,9 @@ func accessPointActive(r *resource) bool {
 	if r.ko.Status.LifeCycleState == nil {
 		return false
 	}
-	cs := *r.ko.Status.LifeCycleState
+	//cs := *r.ko.Status.LifeCycleState
+	// This is for AWS-SDK-GO-V2
+	cs := strings.ToUpper(*r.ko.Status.LifeCycleState)
 	return cs == string(svcapitypes.LifeCycleState_AVAILABLE)
 }
 
@@ -84,7 +86,7 @@ func (rm *resourceManager) customUpdateAccessPoint(
 	}
 	if delta.DifferentAt("Spec.Tags") {
 		err := syncTags(
-			ctx, rm.sdkapi, rm.metrics,
+			ctx, rm.clientV2, rm.metrics,
 			string(*desired.ko.Status.ACKResourceMetadata.ARN),
 			desired.ko.Spec.Tags, latest.ko.Spec.Tags,
 		)

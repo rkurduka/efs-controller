@@ -1,7 +1,9 @@
 
 	if delta.DifferentAt("Spec.Tags") {
 		err := syncTags(
-			ctx, rm.sdkapi, rm.metrics, 
+			//ctx, rm.sdkapi, rm.metrics, 
+			// This is for AWS-SDK-GO-V2
+			ctx, rm.clientV2, rm.metrics,
 			string(*desired.ko.Status.ACKResourceMetadata.ARN), 
 			desired.ko.Spec.Tags, latest.ko.Spec.Tags,
 		)

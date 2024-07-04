@@ -16,6 +16,7 @@ package mount_target
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
@@ -58,7 +59,9 @@ func mountTargetActive(r *resource) bool {
 	if r.ko.Status.LifeCycleState == nil {
 		return false
 	}
-	cs := *r.ko.Status.LifeCycleState
+	//cs := *r.ko.Status.LifeCycleState
+	// This is for AWS-SDK-GO-V2
+	cs := strings.ToUpper(*r.ko.Status.LifeCycleState)
 	return cs == string(svcapitypes.LifeCycleState_AVAILABLE)
 }
 
@@ -109,7 +112,9 @@ func (rm *resourceManager) getSecurityGroups(ctx context.Context, r *svcapitypes
 	}
 
 	// This is require in AWS-SDK-V2 and as generated type is []*string and output.SecurityGroups is []string
-	var securityGroups []*string
+
+	securityGroups := make([]*string, len(output.SecurityGroups))
+
 	for _, sg := range output.SecurityGroups {
 		securityGroups = append(securityGroups, &sg)
 	}
@@ -131,8 +136,8 @@ func (rm *resourceManager) putSecurityGroups(ctx context.Context, r *resource) (
 	// 	},
 	// )
 
-	// This is require in AWS-SDK-V2 and as generated type is []*string and output.SecurityGroups is []*string
-	var securityGroups []string
+	// This is require in AWS-SDK-V2 and as generated type is []*string and output.SecurityGroups is []string
+	securityGroups := make([]string, len(r.ko.Spec.SecurityGroups))
 	for _, sg := range r.ko.Spec.SecurityGroups {
 		securityGroups = append(securityGroups, *sg)
 	}

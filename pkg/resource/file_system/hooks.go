@@ -83,7 +83,11 @@ func filesystemActive(r *resource) bool {
 	if r.ko.Status.LifeCycleState == nil {
 		return false
 	}
-	cs := *r.ko.Status.LifeCycleState
+
+	//cs := *&r.ko.Status.LifeCycleState
+	// This is for AWS-SDK-GO-V2
+	cs := strings.ToUpper(*r.ko.Status.LifeCycleState)
+
 	return cs == string(svcapitypes.LifeCycleState_AVAILABLE)
 }
 
@@ -94,7 +98,7 @@ func filesystemCreating(r *resource) bool {
 		return false
 	}
 	cs := *r.ko.Status.LifeCycleState
-	return cs == string(svcapitypes.LifeCycleState_AVAILABLE)
+	return cs == string(svcapitypes.LifeCycleState_CREATING)
 }
 
 // filesystemDeleting returns true if the supplied filesystem is in the process of
