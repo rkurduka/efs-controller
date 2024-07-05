@@ -111,9 +111,9 @@ func (rm *resourceManager) getSecurityGroups(ctx context.Context, r *svcapitypes
 		return nil, err
 	}
 
-	// This is require in AWS-SDK-V2 and as generated type is []*string and output.SecurityGroups is []string
+	// This is for AWS-SDK-V2 and as generated type is []*string and output.SecurityGroups is []string
 
-	securityGroups := make([]*string, len(output.SecurityGroups))
+	var securityGroups []*string
 
 	for _, sg := range output.SecurityGroups {
 		securityGroups = append(securityGroups, &sg)

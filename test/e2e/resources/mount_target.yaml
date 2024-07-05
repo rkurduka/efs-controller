@@ -2,10 +2,9 @@ apiVersion: efs.services.k8s.aws/v1alpha1
 kind: MountTarget
 metadata:
   name: mymounttargetwithv2
-  namespace: ack-system
 spec:
-  fileSystemID: fs-0b62c569a6ae493d1
+  fileSystemID: fs-026fa00dbd7ac897e
   subnetID: subnet-0f2a053c7bd8faeb6
   ipAddress: 172.31.32.168
   securityGroups: 
-    - "sg-070bb71b990d7a312"
+  - sg-070bb71b990d7a312

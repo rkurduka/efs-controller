@@ -450,7 +450,6 @@ func (rm *resourceManager) sdkDelete(
 	defer func() {
 		exit(err)
 	}()
-	
 	input, err := rm.newDeleteRequestPayload(r)
 	if err != nil {
 		return nil, err
@@ -459,7 +458,7 @@ func (rm *resourceManager) sdkDelete(
 	_ = resp
 	//resp, err = rm.sdkapi.DeleteAccessPointWithContext(ctx, input)
 	resp, err = rm.clientV2.DeleteAccessPoint(ctx, input)
-	
+
 	rm.metrics.RecordAPICall("DELETE", "DeleteAccessPoint", err)
 	return nil, err
 }
@@ -507,7 +506,6 @@ func (rm *resourceManager) updateConditions(
 	rm.setStatusDefaults(ko)
 
 	// Terminal condition
-
 	var terminalCondition *ackv1alpha1.Condition = nil
 	var recoverableCondition *ackv1alpha1.Condition = nil
 	var syncCondition *ackv1alpha1.Condition = nil
@@ -571,8 +569,6 @@ func (rm *resourceManager) updateConditions(
 	if terminalCondition != nil || recoverableCondition != nil || syncCondition != nil {
 		return &resource{ko}, true // updated
 	}
-
-
 	return nil, false // not updated
 }
 

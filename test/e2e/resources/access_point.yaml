@@ -2,6 +2,5 @@ apiVersion: efs.services.k8s.aws/v1alpha1
 kind: AccessPoint
 metadata:
   name: accesspointforfilesystem
-  namespace: ack-system
 spec:
-  fileSystemID: fs-0b62c569a6ae493d1
+  fileSystemID: fs-026fa00dbd7ac897e 

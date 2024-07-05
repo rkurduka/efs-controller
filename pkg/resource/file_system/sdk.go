@@ -140,7 +140,6 @@ func (rm *resourceManager) sdkFind(
 			ko.Spec.KMSKeyID = nil
 		}
 		if elem.LifeCycleState != "" {
-			fmt.Println(elem.LifeCycleState)
 			ko.Status.LifeCycleState = (*string)(&elem.LifeCycleState)
 		} else {
 			ko.Status.LifeCycleState = nil
@@ -736,12 +735,10 @@ func (rm *resourceManager) updateConditions(
 	rm.setStatusDefaults(ko)
 
 	// Terminal condition
-	fmt.Println("Update Condition Started")
 	var terminalCondition *ackv1alpha1.Condition = nil
 	var recoverableCondition *ackv1alpha1.Condition = nil
 	var syncCondition *ackv1alpha1.Condition = nil
 	for _, condition := range ko.Status.Conditions {
-		
 		if condition.Type == ackv1alpha1.ConditionTypeTerminal {
 			terminalCondition = condition
 		}
@@ -801,7 +798,6 @@ func (rm *resourceManager) updateConditions(
 	if terminalCondition != nil || recoverableCondition != nil || syncCondition != nil {
 		return &resource{ko}, true // updated
 	}
-	fmt.Println("Update Condition completed")
 	return nil, false // not updated
 }
 

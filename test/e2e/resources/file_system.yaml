@@ -2,7 +2,6 @@ apiVersion: efs.services.k8s.aws/v1alpha1
 kind: FileSystem
 metadata:
   name: filesystemwithsdkv2
-  namespace: ack-system
 spec:
   encrypted: true
   fileSystemProtection:
